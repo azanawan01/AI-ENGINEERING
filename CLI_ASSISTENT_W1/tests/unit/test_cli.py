@@ -59,3 +59,29 @@ def test_blank_input_is_ignored_and_reset_is_acknowledged() -> None:
 
     assert "Conversation cleared." in output
     assert provider.received == []
+
+
+def test_tools_command_displays_registered_tools() -> None:
+    from app.tools import create_default_registry
+
+    provider = FakeProvider([])
+    session = ChatSession(
+        provider, Conversation("system", max_messages=10), tools=create_default_registry()
+    )
+    output = io.StringIO()
+    ChatCLI(session, False, read_line=scripted_input(["/tools", "/exit"]), output=output).run()
+    val = output.getvalue()
+    assert "REGISTERED ASSISTANT TOOLS" in val
+    assert "clean_csv" in val
+    assert "fix_grammar" in val
+    assert "translate_text" in val
+    assert "natural_language_database" in val
+
+
+def test_help_command_displays_help() -> None:
+    provider = FakeProvider([])
+    output = run_cli(provider, ["/help", "/exit"])
+    assert "/tools" in output
+    assert "/reset" in output
+    assert "/exit" in output
+

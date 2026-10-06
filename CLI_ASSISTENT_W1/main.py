@@ -11,15 +11,27 @@ from app.cli import ChatCLI
 from app.config import ConfigError, load_config
 from app.llm.openai_compatible import OpenAICompatibleProvider
 from app.logging_config import configure_logging
-from app.tools import create_default_registry
+from app.tools import create_default_registry, format_tools_summary
 
 
 def main() -> int:
+    if len(sys.argv) > 1 and sys.argv[1] in ("--tools", "-t"):
+        tools = create_default_registry()
+        print(format_tools_summary(tools))
+        return 0
+
+    if len(sys.argv) > 1 and sys.argv[1] in ("--demo", "-d"):
+        from app.tools.__main__ import run_demo
+
+        run_demo()
+        return 0
+
     try:
         config = load_config()
     except ConfigError as exc:
         print(f"{exc}\nSee .env.example for the expected settings.", file=sys.stderr)
         return 1
+
 
     configure_logging(config.log_level, config.log_file)
 

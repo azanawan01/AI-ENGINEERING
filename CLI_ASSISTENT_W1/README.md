@@ -76,10 +76,16 @@ ollama pull <your-model>
 ## Running
 
 ```bash
-python main.py
+python main.py             # Start interactive assistant
+python main.py --tools     # Inspect all tools directly in terminal
+python main.py --demo      # Run live terminal demonstrations of all tools
 ```
 
-Commands inside the chat: `/reset` clears the conversation, `/exit` quits.
+Commands inside the chat:
+- `/tools`: Shows all registered tools, descriptions, parameters, and example queries.
+- `/reset`: Clears the conversation history.
+- `/help`: Shows available slash commands.
+- `/exit`: Quits the assistant.
 Diagnostics are written to `logs/app.log`, not to the terminal.
 
 ## Configuration

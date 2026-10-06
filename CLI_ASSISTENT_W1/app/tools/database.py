@@ -262,7 +262,11 @@ class NaturalLanguageDatabaseTool:
             # Stage 3: Execution
             start_t = time.perf_counter()
             cursor = conn.cursor()
-            cursor.execute(f"{candidate_sql} LIMIT {params.max_rows}")
+            if not re.search(r"\bLIMIT\b", candidate_sql, re.IGNORECASE):
+                exec_sql = f"{candidate_sql} LIMIT {params.max_rows}"
+            else:
+                exec_sql = candidate_sql
+            cursor.execute(exec_sql)
             raw_rows = cursor.fetchall()
             exec_time = (time.perf_counter() - start_t) * 1000.0
 

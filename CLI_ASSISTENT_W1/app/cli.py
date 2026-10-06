@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 
 EXIT_COMMANDS = frozenset({"/exit", "/quit"})
 RESET_COMMAND = "/reset"
-HELP_TEXT = "Commands: /reset clears the conversation, /exit quits."
+TOOLS_COMMANDS = frozenset({"/tools", "/tool"})
+HELP_COMMANDS = frozenset({"/help", "/?"})
+HELP_TEXT = "Commands: /tools lists available tools, /reset clears conversation, /exit quits."
 
 
 class ChatCLI:
@@ -47,8 +49,32 @@ class ChatCLI:
                 self._session.reset()
                 self._print("Conversation cleared.")
                 continue
+            if user_text.lower() in TOOLS_COMMANDS:
+                self._show_tools()
+                continue
+            if user_text.lower() in HELP_COMMANDS:
+                self._show_help()
+                continue
 
             self._handle_turn(user_text)
+
+    def _show_tools(self) -> None:
+        if self._session.tools:
+            from app.tools import format_tools_summary
+
+            self._print(format_tools_summary(self._session.tools))
+        else:
+            self._print("No tools currently registered.")
+
+    def _show_help(self) -> None:
+        self._print(
+            "Commands:\n"
+            "  /tools  Show all registered tools and their parameters\n"
+            "  /reset  Clear current conversation history\n"
+            "  /help   Show available commands\n"
+            "  /exit   Quit the assistant (or /quit)"
+        )
+
 
     def _handle_turn(self, user_text: str) -> None:
         self._write("Assistant: ")

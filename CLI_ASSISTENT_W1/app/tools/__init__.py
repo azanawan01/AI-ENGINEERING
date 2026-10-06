@@ -27,6 +27,52 @@ def create_default_registry(
     )
 
 
+TOOL_PROMPT_EXAMPLES: dict[str, str] = {
+    "clean_csv": "Clean workspace/sample_data.csv, drop duplicates, and visualize salary",
+    "fix_grammar": "Can you fix the grammar in: 'She do not goes to school yesterday'?",
+    "translate_text": "Translate 'Hello and welcome to our platform' to French with a business tone",
+    "natural_language_database": "Show top 5 highest paid employees in workspace/company.db",
+}
+
+
+def format_tools_summary(registry: ToolRegistry) -> str:
+    """Format all registered tools into a clean, human-readable terminal string."""
+    definitions = registry.definitions
+    count = len(definitions)
+    lines: list[str] = [
+        "=" * 74,
+        f"🛠️  REGISTERED ASSISTANT TOOLS ({count} Available)",
+        "=" * 74,
+    ]
+    if not definitions:
+        lines.append("\nNo tools currently registered.")
+        lines.append("\n" + "=" * 74)
+        return "\n".join(lines)
+
+    for i, d in enumerate(definitions, start=1):
+        lines.append(f"\n{i}. 🔧 {d.name}")
+        lines.append(f"   Description: {d.description}")
+        props = d.parameters.get("properties", {})
+        req = set(d.parameters.get("required", []))
+        if props:
+            lines.append("   Parameters:")
+            for p, meta in props.items():
+                ptype = meta.get("type", "any")
+                status = "REQUIRED" if p in req else "optional"
+                default_val = meta.get("default")
+                def_str = f", default={default_val!r}" if default_val is not None else ""
+                desc = meta.get("description", "")
+                lines.append(f"     • {p} ({ptype}, {status}{def_str}):")
+                if desc:
+                    lines.append(f"       {desc}")
+        example = TOOL_PROMPT_EXAMPLES.get(d.name)
+        if example:
+            lines.append(f"   Example Prompt: \"{example}\"")
+
+    lines.append("\n" + "=" * 74)
+    return "\n".join(lines)
+
+
 __all__ = [
     "CleanCSVTool",
     "FixGrammarTool",
@@ -35,4 +81,6 @@ __all__ = [
     "ToolRegistry",
     "TranslateTextTool",
     "create_default_registry",
+    "format_tools_summary",
 ]
+

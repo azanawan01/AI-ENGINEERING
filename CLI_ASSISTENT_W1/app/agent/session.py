@@ -42,6 +42,12 @@ class ChatSession:
         self._conversation = conversation
         self._tools = tools
 
+    @property
+    def tools(self) -> ToolRegistry | None:
+        """The ToolRegistry associated with this session, if any."""
+        return self._tools
+
+
     def send(
         self,
         user_text: str,

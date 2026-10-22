@@ -1,0 +1,108 @@
+================================================================================
+          SEMANTIC & HYBRID SEARCH ENGINE - HOW TO RUN GUIDE
+================================================================================
+
+1. NAVIGATE TO THE PROJECT DIRECTORY
+------------------------------------
+Open your terminal and run:
+
+    cd "/Users/awan/Desktop/AZAN /INTERNSHIP/AI-ENG/AI-ENGINEERING/semantic_search_engine"
+
+
+2. ACTIVATE THE VIRTUAL ENVIRONMENT
+-----------------------------------
+A pre-configured virtual environment (.venv) is already set up with all
+dependencies (qdrant-client, fastembed, rank-bm25, onnxruntime, etc.).
+
+Run:
+    source .venv/bin/activate
+
+Your terminal prompt will change to show `(.venv)`, indicating it is active.
+(To deactivate when done later, simply run `deactivate`.)
+
+
+3. HOW TO RUN THE PROJECT (DEFAULT DATASET: SCIFACT)
+-----------------------------------------------------
+
+A. Interactive Search (Keyword vs Dense vs Hybrid)
+   Query the engine to compare BM25 Keyword Search, Dense Semantic Search,
+   and Reciprocal Rank Fusion (RRF) Hybrid Search side-by-side:
+
+       python main.py search "hypertension ACE inhibitors cardiovascular risk" --top-k 3
+
+   Try another biomedical query:
+       python main.py search "microRNA expression in breast cancer prognosis" --top-k 3
+
+
+B. Run Benchmark Evaluation
+   Evaluates all 3 search methods against the human-labeled ground truth (qrels)
+   and prints an Information Retrieval comparison table (NDCG@10, MRR, Recall@10):
+
+       python main.py benchmark --eval-samples 35 --top-k 10
+
+
+C. (Optional) Re-index or Index More Documents
+   The database currently has 500 scientific papers indexed. To index more
+   documents or change HNSW parameters:
+
+       python main.py index --dataset scifact --max-docs 1000 --hnsw-m 16 --hnsw-ef-construct 100 --recreate
+
+
+================================================================================
+4. HOW TO TRY DIFFERENT DOMAINS FROM BEIR
+================================================================================
+
+BEIR (Benchmarking Information Retrieval) contains diverse public datasets
+across various domains. You can switch to any of the following:
+
+- "nfcorpus"     : Nutrition, dietary health, and medical Q&A
+- "fiqa"         : Finance, stock market, and banking Q&A
+- "arguana"      : Argument retrieval, debate topics, and counter-arguments
+- "scidocs"      : Computer science, scientific citations, and papers
+- "climate-fever": Climate change claims and fact-checking
+
+To switch to a different domain, follow these 3 simple steps:
+
+STEP 1: Index the New Domain
+----------------------------
+Pass the `--dataset` name and assign a new `--collection` name. The system will
+automatically download the dataset zip, extract it, and index it into Qdrant.
+
+Example with Nutrition ("nfcorpus"):
+    python main.py index --dataset nfcorpus --collection nfcorpus_corpus --max-docs 500 --recreate
+
+Example with Finance ("fiqa"):
+    python main.py index --dataset fiqa --collection fiqa_corpus --max-docs 500 --recreate
+
+
+STEP 2: Run Search on the New Domain
+------------------------------------
+Search using domain-specific questions matching your new dataset:
+
+Nutrition ("nfcorpus"):
+    python main.py search "ketogenic diet epilepsy treatment" --collection nfcorpus_corpus --top-k 3
+
+Finance ("fiqa"):
+    python main.py search "dividend yield investment strategy" --collection fiqa_corpus --top-k 3
+
+
+STEP 3: Benchmark the New Domain
+--------------------------------
+Evaluate the performance on the new domain's labeled query set:
+
+    python main.py benchmark --dataset nfcorpus --collection nfcorpus_corpus --eval-samples 30 --top-k 10
+
+
+================================================================================
+SUMMARY OF CLI PARAMETERS
+================================================================================
+--dataset            Name of the BEIR dataset (e.g. scifact, nfcorpus, fiqa)
+--collection         Name of the Qdrant collection (default: scifact_corpus)
+--storage-path       Local disk path for Qdrant (default: ./qdrant_data)
+--top-k              Number of search results to retrieve (default: 5)
+--eval-samples       Number of labeled test queries to evaluate (default: 50)
+--hnsw-m             HNSW graph link count per node (default: 16)
+--hnsw-ef-construct  HNSW construction search depth (default: 100)
+--ef-search          HNSW search-time depth parameter (default: 64)
+--recreate           Wipe and recreate the Qdrant collection from scratch
+================================================================================
